@@ -1,7 +1,7 @@
 {
-  "name": "stats",
+  "name": "stats-lib",
   "version": "1.0.0",
-  "description": "poop",
+  "description": "statistics library",
   "scripts": {
     "test": "ava spec/"
   },
