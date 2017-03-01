@@ -1,0 +1,14 @@
+{
+  "name": "stats",
+  "version": "1.0.0",
+  "description": "poop",
+  "scripts": {
+    "test": "ava spec/"
+  },
+  "main": "index.js",
+  "author": "turbobeast",
+  "license": "MIT",
+  "devDependencies": {
+    "ava": "^0.18.2"
+  }
+}
