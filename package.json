@@ -3,12 +3,14 @@
   "version": "1.0.0",
   "description": "statistics library",
   "scripts": {
-    "test": "ava spec/"
+    "test": "ava spec/",
+    "lint": "standard --fix"
   },
   "main": "src/index.js",
   "author": "turbobeast",
   "license": "MIT",
   "devDependencies": {
-    "ava": "^0.18.2"
+    "ava": "^0.18.2",
+    "standard": "^9.0.0"
   }
 }

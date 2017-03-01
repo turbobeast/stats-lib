@@ -1,52 +1,41 @@
-function pipe (...funcs) {
-  return function recurse (...vals) {
-    if (!funcs.length) {
-      return vals.length > 1 
-        ? vals
-        : vals[0]
-    }
-
-    const nextVal = funcs.shift()(...vals)
-    return (Array.isArray(nextVal)) 
-      ? recurse(...nextVal)
-      : recurse(nextVal)
-  }
-}
-
-const sub = (one, two) => one - two
-const popshift = (...set) => [set.pop(), set.shift()]
-const sortSet = (...set) => [...set.sort((a, b) => a > b)]
+const {
+  pipe,
+  sub,
+  popshift,
+  sortSet,
+  half,
+  twoChunks,
+  mapVariance,
+  mapTwoDArrayWith } = require('./utils')
 
 const mean = (...set) => set.reduce((a, b) => a + b) / set.length
-const half = (...set) => Math.ceil(set.length * 0.5)
-const interQuartileSplit = (half) => (...set) => [median(...set.slice(0, half - 1)), median(...set.slice(half))]
-const mapVariance = (sm) => (...arr) => arr.map((a) => (a - sm) * (a - sm))
 
 const variance = (...set) => {
   const varyMapped = pipe(mean, mapVariance)(...set)
   return pipe(varyMapped, mean)(...set)
 }
 
-const deviation = (...set) => pipe(variance, Math.sqrt)(...set) // Math.sqrt(variance(...set))
-const range = (...set) => pipe(sortSet, popshift, sub)(...set) // sortSet(...set).pop() - sortSet(...set).shift()
+const deviation = (...set) => pipe(variance, Math.sqrt)(...set)
+const range = (...set) => pipe(sortSet, popshift, sub)(...set)
 
 const median = (...set) => {
-  const half = Math.floor(set.length * 0.5)
-  const sorted = sortSet(...set)
-  return (set.length % 2 !== 0)
-    ? sorted.slice(half).shift()
-    : mean(...sorted.slice(half - 1, half + 1))
+  const h = Math.floor(set.length * 0.5)
+  return pipe(sortSet, (...sorted) => {
+    return (set.length % 2 !== 0)
+      ? pipe((...sorted) => sorted.slice(h, h + 1))(...sorted)
+      : pipe((...sorted) => sorted.slice(h - 1, h + 1), mean)(...sorted)
+  })(...set)
 }
 
 const interquartileRange = (...set) => {
-  const getInterquartileValues =  pipe(half, interQuartileSplit)(...set)
-  return pipe(sortSet, getInterquartileValues, popshift, sub)(...set)
+  const twoSets = pipe(sortSet, twoChunks(half(...set)))(...set)
+  return pipe(mapTwoDArrayWith(median), sub)(twoSets)
 }
 
 const mode = (...set) => {
   let maxCount = 0
   const counterObj = {}
-  return set.reduce((a, b) => { 
+  return set.reduce((a, b) => {
     if (!counterObj[b]) {
       counterObj[b] = { count: 0 }
     }
