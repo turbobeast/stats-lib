@@ -1,35 +1,46 @@
 const {
   pipe,
   sub,
+  swap,
   popshift,
-  sortSet,
+  kwikSort,
   half,
+  squares,
   twoChunks,
-  mapVariance,
   mapTwoDArrayWith } = require('./utils')
 
+const dists = (sm) => (...arr) => arr.map((a) => a - sm)
 const mean = (...set) => set.reduce((a, b) => a + b) / set.length
 
-const variance = (...set) => {
-  const varyMapped = pipe(mean, mapVariance)(...set)
-  return pipe(varyMapped, mean)(...set)
+const distsFromMean = (...set) => {
+  const m = mean(...set)
+  return pipe(dists(m))(...set)
 }
 
-const deviation = (...set) => pipe(variance, Math.sqrt)(...set)
-const range = (...set) => pipe(sortSet, popshift, sub)(...set)
+const variance = (...set) => pipe(distsFromMean, squares, mean)(...set)
+const standardDeviation = (...set) => pipe(variance, Math.sqrt)(...set)
+const range = (...set) => pipe(kwikSort, popshift, sub)(...set)
 
 const median = (...set) => {
-  const h = Math.floor(set.length * 0.5)
-  return pipe(sortSet, (...sorted) => {
+  const h = half(...set)
+  return pipe(kwikSort, (...sorted) => {
     return (set.length % 2 !== 0)
       ? pipe((...sorted) => sorted.slice(h, h + 1))(...sorted)
       : pipe((...sorted) => sorted.slice(h - 1, h + 1), mean)(...sorted)
   })(...set)
 }
 
-const interquartileRange = (...set) => {
-  const twoSets = pipe(sortSet, twoChunks(half(...set)))(...set)
-  return pipe(mapTwoDArrayWith(median), sub)(twoSets)
+const getQuartiles = (...set) => {
+  const h = half(...set)
+  const [first, second] = pipe(kwikSort, twoChunks(h))(...set)
+  return pipe(mapTwoDArrayWith(median))([first, second])
+}
+
+const interquartileRange = (...set) => pipe(getQuartiles, swap, sub)(...set)
+
+const filterValues = (...set) => {
+  const [ q1, q3 ] = getQuartiles(...set)
+  return pipe(kwikSort, (...sorted) => sorted.filter((a) => a >= q1 && a <= q3))(...set)
 }
 
 const mode = (...set) => {
@@ -49,4 +60,4 @@ const mode = (...set) => {
   })
 }
 
-module.exports = { mean, variance, deviation, range, median, interquartileRange, mode }
+module.exports = { mean, variance, standardDeviation, range, median, interquartileRange, filterValues, mode }

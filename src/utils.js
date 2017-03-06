@@ -13,13 +13,29 @@ function pipe (...funcs) {
   }
 }
 
+function kwikSort (...ray) {
+  if (ray.length < 2) { return ray }
+  const smallies = []
+  const biggies = []
+  const pivot = ray.pop()
+  for (let i = 0; i < ray.length; i += 1) {
+    if (ray[i] < pivot) {
+      smallies.push(ray[i])
+    } else {
+      biggies.push(ray[i])
+    }
+  }
+
+  return [...kwikSort(...smallies), pivot, ...kwikSort(...biggies)]
+}
+
 const sub = (one, two) => one - two
 const popshift = (...set) => [set.pop(), set.shift()]
-const sortSet = (...set) => [...set.sort((a, b) => a > b)]
+const swap = (a, b) => [b, a]
+const squares = (...arr) => arr.map((a) => a * a)
 
-const half = (...set) => Math.ceil(set.length * 0.5)
-const twoChunks = (half) => (...set) => [set.slice(half), set.slice(0, half - 1)]
-const mapVariance = (sm) => (...arr) => arr.map((a) => (a - sm) * (a - sm))
+const half = (...set) => Math.floor(set.length * 0.5)
+const twoChunks = (half) => (...set) => [set.slice(0, half), set.slice(set.length % 2 === 0 ? half : half + 1)]
 const mapTwoDArrayWith = (fn) => (ray) => ray.map((inner) => fn(...inner))
 
-module.exports = { pipe, sub, popshift, sortSet, half, twoChunks, mapVariance, mapTwoDArrayWith }
+module.exports = { pipe, sub, swap, popshift, kwikSort, half, twoChunks, mapTwoDArrayWith, squares }
